@@ -1,0 +1,107 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage{slashbox}
+\geometry{
+	a4paper,
+	total={170mm,257mm},
+	left=20mm,
+	right=20mm,
+	top=20mm,
+	bottom=30mm
+}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{placeins}
+\usepackage{float}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{listings}
+\usepackage{lmodern}
+\lstdefinelanguage
+[x64]{Assembler}     % add a "x64" dialect of Assembler
+[x86masm]{Assembler} % based on the "x86masm" dialect
+% with these extra keywords:
+{morekeywords={CDQE,CQO,CMPSQ,CMPXCHG16B,JRCXZ,LODSQ,MOVSXD, %
+		POPFQ,PUSHFQ,SCASQ,STOSQ,IRETQ,RDTSCP,SWAPGS, %
+		rax,rdx,rcx,rbx,rsi,rdi,rsp,rbp, %
+		r8,r8d,r8w,r8b,r9,r9d,r9w,r9b, %
+		r10,r10d,r10w,r10b,r11,r11d,r11w,r11b, %
+		r12,r12d,r12w,r12b,r13,r13d,r13w,r13b, %
+		r14,r14d,r14w,r14b,r15,r15d,r15w,r15b}} % etc.
+\lstset
+{ %Formatting for code in appendix
+	basicstyle=\footnotesize,
+	language=[x64]Assembler,
+	numbers=left,
+	stepnumber=1,
+	tabsize=4,
+	basicstyle=\ttfamily,
+}
+
+\begin{document}
+	
+	\begin{titlepage}
+		\newgeometry{top=5.5cm, bottom=3cm}
+		
+		\centering
+		{\huge\bfseries Podstawy techniki mikroprocesorowej lab.\par}
+		
+		\vspace{0.5cm}
+		Prowadzący: Mgr inż. Antoni Sterna (E00-74ap, środa 13:15) \\
+	
+		\vspace{1.1cm}
+		{\Large Sprawozdanie 2 - 2018.03.21\par}
+		\vfill
+		
+		{\large\bfseries Jakub Dorda 235013\par}
+		{\large\bfseries Marcin Kotas 235098\par}
+		
+		\vspace{1cm}
+		\today \\ \LaTeX
+		
+		\restoregeometry
+	\end{titlepage}
+
+	\newgeometry{top=1cm, bottom=1.2cm, left=20mm, right=20mm}
+
+	\section{Wprowadzenie/cel ćwiczeń}
+		Celem ćwiczeń było wykonanie dwóch programów mających na celu przećwiczenie obsługi zegara oraz przerwań prze niego wywoływanych. Pierwszy program polegał na przepisaniu kodu z poprzednich zajęć zastępując opóźnienie programowe - wielokrotne wywołanie nop przez czas zliczany na rejestrze zegara. Drugi program miał na celu przećwiczenie obsługi przerwań oraz zmiennych.
+		
+	\section{Kod programu pierwszego}
+		\begin{minipage}{.5\textwidth}
+			\lstinputlisting{../../lab2/zad1.asm}
+		\end{minipage}%
+		\begin{minipage}{.5\textwidth}
+			Stała LOAD oraz pomocnicze TIME i CYKLE, służą do wyliczenia zakresu ustawianego potem na rejestrach tl0, th0,
+			niezbędne do poprawnej konfiguracji zegara.\\\\
+			Podstawowa część programu nie została zmieniona, polega na przesuwaniu bitów w akumulatorze w efekcie otrzymujemy efekt
+			poruszającej się diody w prawo oraz lewo z odbiciem.\\\\
+			Subrutyna "timer\_init" konfiguruje tryb działania zegara. Flaga tr0 przedstawia stan zegara. Ustawiony bit sygnalizuje działanie zegara. \\\\
+			Subrutyna "delay" wywołuje się sama do momentu przekroczenia zakresu rejestru liczącego impulsy zegara. Flaga tf0 to flaga przepełnienia. Jest automatycznie ustawiana w momencie, gdy zegar przekroczy zakres 16 bitów (dla trybu 16-bitowego).
+		\end{minipage}
+	
+	\section{Kod programu drugiego}
+		\begin{minipage}{.5\textwidth}
+			\lstinputlisting[firstnumber=1, firstline=1, lastline=45]{../../lab2/zad2.asm}
+		\end{minipage}%
+		\begin{minipage}{.5\textwidth}
+			Drugi program wykorzystuje przerwania określone w 0BH do zwiększania zmiennej LICZNIK, po zmniejszeniu wartości z 20 do 0 odmierza czas 1 sekundy. Po odliczeniu 1s przez LICZNIK zwiększamy SECONDS
+			sprawdzając jednocześnie czy nie przekroczono wartości 60, jeśli tak się stało skaczemy do etykiety "minute" i zwiększamy zmienną MINUTES o 1 jednocześnie resetując SECONDS na 0. W przypadku przekroczenia przez MINUTES wartości 60, skaczemy do "hour" i zwiększamy HOURS o 1 jednocześnie resetując MINUTES do 0.
+			Sprawdzamy czy zmienna nie przekroczyła wartości 24, jeśli tak to ustawiamy jej wartość na 0.\\\\
+		\end{minipage}
+		
+		\begin{minipage}{.5\textwidth}
+			\lstinputlisting[firstnumber=46, firstline=46, lastline=100]{../../lab2/zad2.asm}
+		\end{minipage}%
+		\begin{minipage}{.5\textwidth}
+			Subrutyna "timer" zawiera konfigurację zegara, oraz obsługi przerwania. ustawienie bitu na rejestrze ea włącza obsługę
+			przerwań, et0 włącza wywoływanie przerwania przy przepełnienie rejestru zegara.
+		\end{minipage}
+
+	\section{Wnioski/podsumowanie}
+	
+			Wszystkie programy uruchomiły się poprawnie. Nie udało się w czasie laboratorium skończyć programu mającego na celu konwersję czasu pobieranego z zegara na format HH:MM:SS, został on dokończony poza czasem trwania zajęć.
+	
+\end{document}
