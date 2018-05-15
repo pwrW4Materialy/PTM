@@ -76,14 +76,30 @@
 			\lstinputlisting[firstnumber=1, firstline=1, lastline=44]{../../lab4/lab4.asm}
 		\end{minipage}%	
 		\begin{minipage}{.5\textwidth}
-			
+			OBH - Przerwanie wywoływane przez zegar mikrokontrolera. Ilość przerwań jest zliczana w zmiennej
+			LICZNIK, przerwanie wywoływane jest co 50ms, 20 odlicza czas 1 sekundy.\\\\
+			Flaga WRITE\_TIME\_FLAG jest ustawiana, by powiadomić główną pętlę programu o konieczności aktualizacji
+			czasu wyświetlanego przez LCD.\\\\
+			W 'add\_sec' sprawdzamy czy zmienna SECONDS po zwiększeniu o 1 przekroczyła wartość 60,
+			jeśli tak się stanie przechodzimy do 'add\_min' - zerujemy SECONDS, zwiększamy MINUTES o 1 sprawdzając
+			jednocześnie czy przekroczyliśmy wartość 60. Zwiększanie oraz sprawdzenie warunku na HOURS odbywa się
+			w analogiczny sposób w 'add\_hr'\\\\
 		\end{minipage}
 		
 		\begin{minipage}{.5\textwidth}
 			\lstinputlisting[firstnumber=45, firstline=45, lastline=98]{../../lab4/lab4.asm}
 		\end{minipage}%	
 		\begin{minipage}{.5\textwidth}
-			
+			W etykiecie 'begin' ustawiamy początkowe wartości zmiennych zegara oraz alarmu. Wywołujemy metody
+			odpowiedzialne za inicjalizację zegara oraz obsługi LCD - 'timer\_init' i 'lcd\_init'.\\\\
+			Etykieta 'check\_time' jest główną nieskończoną pętlą programu sprawdzającą flagę WRITE\_TIME\_FLAG,
+			w przypadku ustawiania flagi bitowej, następuje aktualizacja czasu na LCD prze wywołanie 'update\_time',
+			oraz sprawdzenie czy osiągnięto czas określony w zmiennych alarmu.\\\\\\\\\\\\\\\\\\\\
+			Metoda 'update\_time' odpowiada za wypisanie zmiennych zegara na LCD. Na początku przesuwamy kursor na
+			pozycję 4 by wyśrodkować teks na ekranie. Do wypisywania liczby służy metoda 'lcd\_writeint', 
+			separatory ':' są wypisywana przy pomocy wywołania 'lcd\_writec'.\\\\
+			Metoda 'alarm' porównuje kolejne zmienne zegara ze zmiennymi alarmu, w przypadku zgodności w drugiej
+			linijce wyświetlacza wypisany zostaje ciąg znaków zapisany w stałej 'text'.
 		\end{minipage}
 		
 		\begin{minipage}{.5\textwidth}
