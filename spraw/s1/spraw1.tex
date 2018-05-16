@@ -1,0 +1,89 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage{slashbox}
+\geometry{
+	a4paper,
+	total={170mm,257mm},
+	left=20mm,
+	right=20mm,
+	top=20mm,
+	bottom=20mm
+}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{placeins}
+\usepackage{float}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+
+\usepackage{listings}
+\lstset{
+	language=[x86masm]Assembler,
+	breaklines=true,
+	tabsize=4,
+}
+
+
+\begin{document}
+	
+	\begin{titlepage}
+		\newgeometry{top=5.5cm, bottom=3cm}
+		
+		\centering
+		{\huge\bfseries Podstawy techniki mikroprocesorowej lab.\par}
+		
+		\vspace{0.5cm}
+		Prowadzący: Mgr inż. Antoni Sterna (E00-74ap, środa 13:15) \\
+	
+		\vspace{1.1cm}
+		{\Large sprawozdanie 1 - 2018.03.21\par}
+		\vfill
+		
+		{\large\bfseries Jakub Dorda 235013\par}
+		{\large\bfseries Marcin Kotas 235098\par}
+		
+		\vspace{1cm}
+		\today \\ \LaTeX
+		
+		\restoregeometry
+	\end{titlepage}
+
+	\newgeometry{top=1.5cm, bottom=1.5cm, left=20mm, right=20mm}
+
+	\section{Wprowadzenie/cel ćwiczeń}
+		Celem ćwiczeń było wykonanie trzech programów. Pierwszy program kopiował dane z pamięci wewnętrznej do zewnętrznej, drugi sterował diodami, a trzeci kopiował dane z pamięci zewnętrznej do zewnętrznej.
+		
+	\section{Kod programu pierwszego}
+		\begin{minipage}{.5\textwidth}
+			\lstinputlisting{../../lab1/prg1.s}
+		\end{minipage}%
+		\begin{minipage}{.5\textwidth}
+			Aby skopiować do zewnętrznej pamięci należy umieścić adres komórki w 16 bitowym rejestrze DPTR.
+			Przy korzystaniu z tego rejestru należy użyć komendy movx zamiast mov.
+		\end{minipage}
+	
+	\section{Kod programu drugiego}
+	\begin{minipage}{.5\textwidth}
+		\lstinputlisting{../../lab1/prg2.a51}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		Drugi program wykorzystuje funkcję nop (no operation) aby wymusić opóźnienie wykonywania programu. Wykonanie pętli d0 trwa w przybliżeniu 4 us. Poprzez dodanie dodatkowych liczników w r0 i r1, pętla delay wykonuje się 10ms*r3.
+		W naszym przypadku w r3 znajduje się 50, więc pętla wykonuje się pół sekundy.
+		
+		Sterowanie diodami odbywa się za pomocą rejestru p1. Dla 0 dioda się świeci, dla 1 nie. Efekt przesuwającej się diody uzyskany został przez użycie funkcji rr oraz rl, które przesuwają odpowiednio w prawo oraz w lewo bity znajdujące się w akumulatorze.
+	\end{minipage}
+
+	\section{Kod programu trzeciego}
+	\begin{minipage}{.5\textwidth}
+		\lstinputlisting{../../lab1/prg3.a51}
+	\end{minipage}%
+	\begin{minipage}{.5\textwidth}
+		Aby program mógł kopiować dane z pamięci zewnętrznej do zewnętrznej, należy użyć dwa razy rejestru DPTR. W tym celu na początku pętli do DPTR wstawiany jest adres z rejestrów r0 i r1, z którego mają zostać skopiowane dane. Wtedy odbywa się kopiowanie do akumulatora zawartości pamięci pod adresem wskazywanym przez DPTR oraz zwiększenie adresu DPTR. Następnie do rejestrów r0 i r1 odstawiany jest aktualny adres DPTR oraz wstawiany nowy adres zachowany w rejestrach r2 i r3. Dopiero wtedy kopiuje zawartość akumulatora pod nowy adres wskazywany przez DPTR, oraz zwiększa adres DPTR. Na końcu pętli adres wskazywany prze dptr jest wstawiany z powrotem do rejestrów r2 i r3.
+	\end{minipage}
+
+	\section{Wnioski/podsumowanie}
+	
+			Wszystkie programy uruchomiły się poprawnie.
+	
+\end{document}

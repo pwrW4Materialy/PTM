@@ -1,0 +1,146 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{geometry}
+\usepackage{slashbox}
+\geometry{
+	a4paper,
+	total={170mm,257mm},
+	left=20mm,
+	right=20mm,
+	top=20mm,
+	bottom=20mm
+}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{placeins}
+\usepackage{float}
+
+\usepackage{polski}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+\usepackage{listings}
+\lstset{
+	language=[x86masm]Assembler,
+	breaklines=true,
+	tabsize=4,
+	basicstyle=\ttfamily,
+}
+
+
+\begin{document}
+	
+	\begin{titlepage}
+		\newgeometry{top=5.5cm, bottom=3cm}
+		
+		\centering
+		{\huge\bfseries Podstawy techniki mikroprocesorowej lab.\par}
+		
+		\vspace{0.5cm}
+		Prowadzący: Mgr inż. Antoni Sterna (E00-74ap, środa 13:15) \\
+	
+		\vspace{1.1cm}
+		{\Large sprawozdanie 3 - 2018.04.04\par}
+		\vfill
+		
+		{\large\bfseries Jakub Dorda 235013\par}
+		{\large\bfseries Marcin Kotas 235098\par}
+		
+		\vspace{1cm}
+		\today \\ \LaTeX
+		
+		\restoregeometry
+	\end{titlepage}
+
+	\newgeometry{top=1.5cm, bottom=1.5cm, left=20mm, right=20mm}
+
+	\section{Wprowadzenie/cel ćwiczeń}
+		Celem ćwiczeń było napisanie funkcji obsługujących wyświetlacz LCD\@.
+		
+	\section{Realizacja funkcji}
+		\subsection{Zadeklarowane stałe}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=0,lastline=7]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Zmienne deklarują ustawienia odpowiednich adresów w pamięci, które mapowane są do obsługi wyświetlacza.
+				Zmienna \texttt{MODE} deklaruje tryb działania wyświetlacza (dwie linijki oraz przesuwanie wskaźnika na tekst wraz z pisaniem)
+			\end{minipage}
+		
+		\subsection{Inicjalizacja wyświetlacza}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=26,lastline=33]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Funkcja \texttt{init\_lcd} uruchamia i czyści wyświetlacz, a następnie ustawia tryb działania.
+			\end{minipage}
+
+		\subsection{Wysyłanie rozkazów do wyświetlacza}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=35,lastline=41]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Funkcja \texttt{init\_cmd} wysyła kod rozkazu z akumulatora na odpowiedni adres.
+				Przed każdym wysłaniem rozkazu następuje sprawdzenie, czy wyświetlacz nie wykonuje w tym momencie innego rozkazu.
+			\end{minipage}
+
+		\subsection{Sprawdzanie stanu wyświetlacza}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=90,lastline=95]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Funkcja \texttt{wait\_busy} czyta status wyświetlacza z adresu \texttt{RD\_STATUS}, a następnie sprawdza, czy ustawiona jest bit siódmy (busy flag).
+				Sprawdzanie następuje w pętli aż flaga nie będzie ustawiona. 
+			\end{minipage}
+
+		\subsection{Wypisywanie znaku na wyświetlacz}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=43,lastline=49]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Funkcja \texttt{lcd\_writec} pobiera kod znaku z akumulatora, upewnia się, że wyświetlacz nie jest zajęty, a następnie wysyła kod znaku pod adres \texttt{WR\_DATA}.
+			\end{minipage}
+
+		\subsection{Wypisywanie tekstu na wyświetlacz}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=51,lastline=65]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Funkcja \texttt{lcd\_writestr} pobiera adres do tekstu z rejestru DPTR, a następnie kopiuje jeden znak do akumulatora.
+				Jeżeli pobrany do akumulatora znak jest równy 0, to cały tekst został już wypisany i funkcja kończy działanie.
+
+				W pozostałych przypadkach funkcja odkłada na stos obecny wskaźnik w DPTR i wywołuje funkcję \texttt{lcd\_writec}.
+				Następnie przywraca poprzedni wskaźnik na tekst do DPTR, zwiększa go o 1 i wraca na początek funkcji.
+			\end{minipage}
+
+		\subsection{Manipulowanie pozycją wskaźnika tekstu}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=67,lastline=76]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Funkcja \texttt{lcd\_gotoxy} pobiera wybrany adres wskaźnika z akumulatora w następującym formacie: najmłodsze 4 bity oznaczają pozycję x, bit na pozycji czwartej oznacza rząd (0 lub 1).
+				Dzięki temu bity w pierwszym rzędzie adresowane są od 0 do 15, a bity w drugim rzędzie od 16 do 31.
+
+				Funkcja najpierw zeruje wszystkie bity 5-7 tak, aby ograniczyć wartość do 31 w przypadku błędnego argumentu.
+				Następnie sprawdza, czy bit czwarty jest ustawiony i jeśli tak, to najpierw go zeruje, a później dodaje do całej wartości \texttt{40H}.
+				Dzieje się tak ponieważ w rejestrze danych wyświetlacza rząd drugi jest umiejscowiony w adresach od \texttt{40H}.
+
+				Po uzyskaniu końcowego adresu funkcja ustawia bit siódmy, co jest informacją dla wyświetlacza, że młodsze siedem bitów jest adresem wskaźnika pamięci danych.
+				W tej postaci rozkaz przekazywany jest do funkcji \texttt{lcd\_cmd}.
+			\end{minipage}
+			
+		\subsection{Zamiana liczb na tekst}
+			\begin{minipage}{.5\textwidth}
+				\lstinputlisting[firstline=78,lastline=88]{../../lab3/lab3.asm}
+			\end{minipage}%
+			\begin{minipage}{.5\textwidth}
+				Funkcja \texttt{int\_to\_str} pobiera liczbę z akumulatora, a następnie dzieli ją przez 10.
+				Po tej operacji w akumulatorze jest wynik dzielenia, a w rejestrze B jest reszta z dzielenia.
+				Do każdej z tych wartości dodawany jest kod ASCII znaku 0, a następnie funkcja zwraca przez stos oba znaki.
+				Funkcja najpierw odkłada na stos resztę z dzielenia, a następnie wynik, aby po wywołaniu funkcji znaki mogły być pobierane ze stosu i przekazywane do funkcji \texttt{lcd\_writec} w odpowiedniej kolejności.
+			\end{minipage}
+
+	\section{Wnioski/podsumowanie}
+		Wszystkie funkcje zrealizowane podczas zajęć uruchomiły się poprawnie.
+		Funkcja zamiany liczb na tekst została dopisana po zajęciach.
+	
+\end{document}
