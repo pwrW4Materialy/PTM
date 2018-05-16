@@ -106,14 +106,36 @@
 			\lstinputlisting[firstnumber=97, firstline=98, lastline=150]{../../lab4/lab4.asm}
 		\end{minipage}%	
 		\begin{minipage}{.5\textwidth}
-			
+			Subrutyna "timer\_init" konfiguruje tryb działania zegara. Flaga tr0 przedstawia stan zegara. Ustawiony bit sygnalizuje działanie zegara.
+			\vspace{5cm}
+
+			Funkcja init\_lcd uruchamia i czyści wyświetlacz, a następnie ustawia tryb działania.
+			\vspace{3cm}
+
+			Funkcja lcd\_cmd wysyła kod rozkazu z akumulatora na odpowiedni adres.
+			Przed każdym wysłaniem rozkazu następuje sprawdzenie, czy wyświetlacz nie wykonuje w tym momencie innego rozkazu.
+			\vspace{2cm}
+
+			Funkcja lcd\_writec pobiera kod znaku z akumulatora, upewnia się, że wyświetlacz nie jest zajęty, a następnie wysyła kod znaku pod adres WR\_DATA.
 		\end{minipage}
 		
 		\begin{minipage}{.5\textwidth}
 			\lstinputlisting[firstnumber=146, firstline=151, lastline=200]{../../lab4/lab4.asm}
 		\end{minipage}%	
 		\begin{minipage}{.5\textwidth}
-			
+			\vspace{1cm}
+			Funkcja lcd\_writestr pobiera kolejne znaki tekstu wskazywanego przez adres w DPTR, a następnie drukuje je pojedynczo przy pomocy funkcji lcd\_writec.
+			\vspace{4cm}
+
+			lcd\_writeint konwertuje dwucyfrowe liczby do formatu tekstowego i wyświetla je przy pomocy funkcji lcd\_writec.
+
+			Konwersja odbywa się poprzez podzielenie liczby w akulumatorze przez 10.
+			Po wykonaniu dzielenia w akumulatorze znajduje się cyfra dziesiątek, a w rejestrze B cyfra jedności.
+			Do każdej z tych cyfr dodawana jest wartość znaku ASCII '0'.
+			\vspace{2cm}
+
+			Funkcja lcd\_gotoxy ustawia adres wskaźnika na pozycję od 0 do 15 dla pierwszego rzędu i od 16 do 31 dla drugiego rzędu.
+			\vspace{8cm}
 		\end{minipage}
 
 	\section{Wnioski/podsumowanie}
