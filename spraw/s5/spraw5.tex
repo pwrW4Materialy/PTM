@@ -70,25 +70,62 @@
 		Celem ćwiczeń była nauka obsługi klawiatury alfanumerycznej.
 		
 	\section{Kod programu}
+		Rejestry \verb|P5| oraz \verb|P7| w używanym zestawie podłączone są odpowiednio pod adresami \verb|0F8H| i \verb|0DBH|.
+		
 		\begin{minipage}{.5\textwidth}
-			\lstinputlisting[firstnumber=1, firstline=1, lastline=44]{../../lab5/lab5.asm}
+			\lstinputlisting[firstnumber=1, firstline=1, lastline=9]{../../lab5/lab5.asm}
 		\end{minipage}%	
 		\begin{minipage}{.5\textwidth}
-			foo
+			W głównej pętli programu następuje wywoływanie funkcji \verb|read_keyboard|,
+			która, jeśli któryś z przycisków był naciśnięty, ustawia bit \verb|C| oraz zwraca kod klawisza w akumulatorze.
+			
+			Jeżeli bit \verb|C| jest ustawiony, następuje skok do etykiety \verb|is_key|.
+			W przeciwnym przypadku do rejestru \verb|P1| wstawiana jest wartość \verb|0ffh|, która wygasza wszystkie diody.
 		\end{minipage}
 		
 		\begin{minipage}{.5\textwidth}
-			\lstinputlisting[firstnumber=45, firstline=45, lastline=98]{../../lab5/lab5.asm}
+			\lstinputlisting[firstnumber=12, firstline=12, lastline=36]{../../lab5/lab5.asm}
 		\end{minipage}%	
 		\begin{minipage}{.5\textwidth}
-			foo
+			Procedura \verb|read_keyboard| sprawdza po kolei kolejne wiersze poprzez wywoływanie funkcji \verb|read_row|.
+			W rejestrze \verb|R1| znajduje się numer wiersza (bit 7 = pierwszy wiersz, bit 4 = ostatni).
+			Młodsze bity \verb|R1| ustawione są na \verb|1|, aby umożliwić zmianę numeru wiersza za pomocą komendy \verb|RR|.
+
+			Pętla \verb|read_kb| wykonuje się 4 razy, aby sprawdzić każdy wiersz.
+			Funkcja \verb|read_row| ustawia bit \verb|C| oraz zwraca numer kolumny w akumulatorze, jeżeli któryś z przycisków był naciśnięty.
+			
+			Jeżeli wywołanie \verb|read_row| ustawiło bit \verb|C|, następuje skok do etykiety \verb|found_key|.
+			Jeżeli w żadnej iteracji pętli nie został ustawiony bit \verb|C|, funkcja wraca do głównej pętli programu.
+
+			Na początku procedury \verb|found_key| następuje odłożenie rejestru \verb|PSW| na stos, aby zachować stan flagi \verb|CY|.
+			Następnie wartość rejestru \verb|R0| (numer wiersza) wymnażana jest przez 4, a następnie dodawany jest numer kolumny.
+			W ten sposób uzyskiwany jest unikalny kod wciśniętego przycisku.
 		\end{minipage}
 		
 		\begin{minipage}{.5\textwidth}
-			\lstinputlisting[firstnumber=97, firstline=98, lastline=150]{../../lab5/lab5.asm}
+			\lstinputlisting[firstnumber=38, firstline=38, lastline=63]{../../lab5/lab5.asm}
 		\end{minipage}%	
 		\begin{minipage}{.5\textwidth}
-			foo
+			Funkcja \verb|read_row| na początku zeruje górną połowę rejestru \verb|P5| (na tych bitach podłączone są wiersze klawiatury).
+			Następnie zeruje dolną połowę akumulatora (aby nie nadpisać bitów w dolnej połowie \verb|P5|)
+			oraz ustawia wybrane bity poprzez operację \verb|ORL P5, A|.
+
+			W następnej kolejności kopiuje zawartość rejestru \verb|P7|
+			do akumulatora oraz zeruje starszą połowę (4 młodsze bity \verb|P7| informują,
+			w której kolumnie przycisk został wciśnięty).
+
+			W pętli \verb|columns| następuje przesuwanie z przeniesieniem w prawo \verb|A| do momentu ustawienia bitu \verb|C|.
+			Licznik pętli \verb|R2| informuje o numerze kolumny, w której został naciśnięty przycisk.
+		\end{minipage}
+
+		\begin{minipage}{.5\textwidth}
+			\lstinputlisting[firstnumber=66, firstline=66, lastline=70]{../../lab5/lab5.asm}
+		\end{minipage}%	
+		\begin{minipage}{.5\textwidth}
+			W procedurze \verb|is_key| następuje wyzerowanie bitu \verb|ACC.7|,
+			aby zasygnalizować, że na diodach wyświetlany jest kod przycisku (w przypadku przycisku o kodzie 0 nie zapalą się żadne inne diody)
+			Następnie zawartość akumulatora kopiowana jest do rejestru \verb|P1|,
+			do którego podłączone są diody, po czym następuje powrót do pętli głównej programu.
 		\end{minipage}
 		
 	\section{Wnioski/podsumowanie}
